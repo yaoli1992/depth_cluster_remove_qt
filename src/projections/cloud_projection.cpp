@@ -1,22 +1,8 @@
-// Copyright (C) 2017  I. Bogoslavskyi, C. Stachniss, University of Bonn
-
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or (at your option)
-// any later version.
-
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details.
-
-// You should have received a copy of the GNU General Public License along
-// with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "projections/cloud_projection.h"
 #include <string>
 #include <vector>
-
+#include <iostream>
 #include "utils/mem_utils.h"
 
 namespace depth_clustering {
@@ -31,12 +17,15 @@ CloudProjection::CloudProjection(const ProjectionParams& params)
     throw std::runtime_error("_params not valid for projection.");
   }
   _data = PointMatrix(_params.cols(), PointColumn(_params.rows()));
-  _depth_image =
-      cv::Mat::zeros(_params.rows(), _params.cols(), cv::DataType<float>::type);
-}
+  _depth_image =cv::Mat::zeros(_params.rows(), _params.cols(), cv::DataType<float>::type);
+  std::cout <<"Cloud Projection init with params "<<std::endl;
+  std::cout<< "_param cols and rows is : "<<params.rows()<<"  "<< params.cols()<<std::endl;
+
+  }
 
 RichPoint CloudProjection::UnprojectPoint(const cv::Mat& image, const int row,
                                           const int col) const {
+ // std::cout <<"CloudProjection::UnprojectPoint "<<std::endl;
   float depth = image.at<float>(row, col);
   Radians angle_z = this->_params.AngleFromRow(row);
   Radians angle_xy = this->_params.AngleFromCol(col);
@@ -46,8 +35,8 @@ RichPoint CloudProjection::UnprojectPoint(const cv::Mat& image, const int row,
   return point;
 }
 
-void CloudProjection::CheckCloudAndStorage(
-    const RichPoint::AlignedVector& points) {
+void CloudProjection::CheckCloudAndStorage(const RichPoint::AlignedVector& points) 
+{
   if (this->_data.size() < 1) {
     throw std::length_error("_data size is < 1");
   }
@@ -69,7 +58,9 @@ void CloudProjection::CheckImageAndStorage(const cv::Mat& image) {
   }
 }
 
-void CloudProjection::FixDepthSystematicErrorIfNeeded() {
+void CloudProjection::FixDepthSystematicErrorIfNeeded() 
+{
+  std::cout <<"CloudProjection::FixDepthSystematicErrorIfNeeded "<<std::endl;
   if (_depth_image.rows < 1) {
     fprintf(stderr, "[INFO]: image of wrong size, not correcting depth\n");
     return;
@@ -78,7 +69,9 @@ void CloudProjection::FixDepthSystematicErrorIfNeeded() {
     fprintf(stderr, "[INFO]: Not correcting depth data.\n");
     return;
   }
-  for (int r = 0; r < _depth_image.rows; ++r) {
+
+  for (int r = 0; r < _depth_image.rows; ++r) 
+  {
     auto correction = _corrections[r];
     for (int c = 0; c < _depth_image.cols; ++c) {
       if (_depth_image.at<float>(r, c) < 0.001f) {
@@ -89,10 +82,14 @@ void CloudProjection::FixDepthSystematicErrorIfNeeded() {
   }
 }
 
-const cv::Mat& CloudProjection::depth_image() const {
+const cv::Mat& CloudProjection::depth_image() const 
+{
   return this->_depth_image;
 }
 
-cv::Mat& CloudProjection::depth_image() { return this->_depth_image; }
+cv::Mat& CloudProjection::depth_image() {
+  std::cout <<"CloudProjection::depth_image()"<<std::endl;
+   return this->_depth_image; 
+   }
 
 }  // namespace depth_clustering

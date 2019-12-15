@@ -1,17 +1,3 @@
-// Copyright (C) 2017  I. Bogoslavskyi, C. Stachniss, University of Bonn
-
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or (at your option)
-// any later version.
-
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details.
-
-// You should have received a copy of the GNU General Public License along
-// with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils/velodyne_utils.h"
 
@@ -55,10 +41,14 @@ Cloud::Ptr ReadKittiCloudTxt(const string& path) {
   return cloud_ptr;
 }
 
-Cloud::Ptr CloudFromMat(const cv::Mat& image, const ProjectionParams& config) {
+Cloud::Ptr CloudFromMat(const cv::Mat& image, const ProjectionParams& config) 
+{
   auto cloud_ptr = Cloud::Ptr(new Cloud);
-  for (int row = 0; row < image.rows; ++row) {
-    for (int col = 0; col < image.cols; ++col) {
+
+  for (int row = 0; row < image.rows; ++row) 
+  {
+    for (int col = 0; col < image.cols; ++col) 
+    {
       float meters = image.at<float>(row, col);
       float angle_xy = config.AngleFromCol(col).val();
       float angle_z = config.AngleFromRow(row).val();
@@ -109,6 +99,9 @@ cv::Mat FixKITTIDepth(const cv::Mat& original) {
 
 cv::Mat MatFromDepthPng(const string& path) {
   cv::Mat depth_image = cv::imread(path, CV_LOAD_IMAGE_ANYDEPTH);
+
+    // cv::imshow("image",depth_image);
+    // cv::waitKey(10);
 
   depth_image.convertTo(depth_image, CV_32F);
   depth_image /= 500.;

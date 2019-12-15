@@ -90,21 +90,24 @@ class ImageBasedClusterer : public AbstractClusterer {
    */
   void OnNewObjectReceived(const Cloud& cloud, const int sender_id) override {
     // generate a projection from a point cloud
-    if (!cloud.projection_ptr()) {
+    if (!cloud.projection_ptr()) 
+    {
       fprintf(stderr, "ERROR: projection not initialized in cloud.\n");
       fprintf(stderr, "INFO: cannot label this cloud.\n");
       return;
     }
+
     time_utils::Timer timer;
     LabelerT image_labeler(cloud.projection_ptr()->depth_image(),
                            cloud.projection_ptr()->params(), _angle_tollerance);
     image_labeler.ComputeLabels(_diff_type);
     const cv::Mat* labels_ptr = image_labeler.GetLabelImage();
-    fprintf(stderr, "INFO: image based labeling took: %lu us\n",
-            timer.measure());
+    
+    fprintf(stderr, "INFO: image based labeling took: %lu us\n",timer.measure());
 
     // send image to whoever wants to get it
-    if (_label_client) {
+    if (_label_client) 
+    {
       _label_client->OnNewObjectReceived(*labels_ptr, this->id());
     }
 
@@ -113,6 +116,7 @@ class ImageBasedClusterer : public AbstractClusterer {
 
     // create 3d clusters from image labels
     std::unordered_map<uint16_t, Cloud> clusters;
+    
     for (int row = 0; row < labels_ptr->rows; ++row) {
       for (int col = 0; col < labels_ptr->cols; ++col) {
         const auto& point_container = cloud.projection_ptr()->at(row, col);

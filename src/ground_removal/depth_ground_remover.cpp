@@ -1,24 +1,7 @@
-// Copyright (C) 2017  I. Bogoslavskyi, C. Stachniss, University of Bonn
-
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or (at your option)
-// any later version.
-
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details.
-
-// You should have received a copy of the GNU General Public License along
-// with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "./depth_ground_remover.h"
-
 #include <opencv2/highgui/highgui.hpp>
-
 #include <algorithm>
-
 #include "utils/velodyne_utils.h"
 #include "image_labelers/linear_image_labeler.h"
 #include "image_labelers/diff_helpers/angle_diff.h"
@@ -34,27 +17,44 @@ using time_utils::Timer;
 
 const cv::Point ANCHOR_CENTER = cv::Point(-1, -1);
 const int SAME_OUTPUT_TYPE = -1;
-
-void DepthGroundRemover::OnNewObjectReceived(const Cloud& cloud,
-                                             const int sender_id) {
+/**
+ * 该函数是地面分割的核心函数，该函数的流程  
+ * 点云 cloud  ---->>>>depth_image ---->>>>>angle_image ---->>>>smoothed_image
+ *            ---->>>>no_ground_image
+*/
+void DepthGroundRemover::OnNewObjectReceived(const Cloud& cloud,const int sender_id) {
   // this can be done even faster if we switch to column-major implementation
   // thus allowing us to load whole row in L1 cache
-  if (!cloud.projection_ptr()) {
+  if (!cloud.projection_ptr()) 
+  {
     fprintf(stderr, "No projection in cloud. Skipping ground removal.\n");
     return;
   }
   Cloud cloud_copy(cloud);
-  const cv::Mat& depth_image =
-      RepairDepth(cloud.projection_ptr()->depth_image(), 5, 1.0f);
+  cv::imshow("image",cloud.projection_ptr()->depth_image());
+  const cv::Mat& depth_image = RepairDepth(cloud.projection_ptr()->depth_image(), 5, 1.0f);
+
+
   Timer total_timer;
   auto angle_image = CreateAngleImage(depth_image);
+  
   auto smoothed_image = ApplySavitskyGolaySmoothing(angle_image, _window_size);
-  auto no_ground_image = ZeroOutGroundBFS(depth_image, smoothed_image,
+  
+  auto no_ground_image = ZeroOutGroundBFS(depth_image, smoothed_image,//5_deg,5);
                                           _ground_remove_angle, _window_size);
+
   fprintf(stderr, "INFO: Ground removed in %lu us\n", total_timer.measure());
+  
   cloud_copy.projection_ptr()->depth_image() = no_ground_image;
-  this->ShareDataWithAllClients(cloud_copy);
+ // this->ShareDataWithAllClients(cloud_copy);
+  std::cout<<"no_ground_iamge 高与宽"<<no_ground_image.cols<< " * "<<no_ground_image.rows<<std::endl;
+
   _counter++;
+    //add by yaoli      use opencv visualization the depth iamge
+    cv::imshow("image2",depth_image);
+    cv::imshow("image3",angle_image);
+    cv::waitKey(500);
+
 }
 
 Mat DepthGroundRemover::ZeroOutGround(const cv::Mat& image,
@@ -77,20 +77,27 @@ Mat DepthGroundRemover::ZeroOutGround(const cv::Mat& image,
 Mat DepthGroundRemover::ZeroOutGroundBFS(const cv::Mat& image,
                                          const cv::Mat& angle_image,
                                          const Radians& threshold,
-                                         int kernel_size) const {
+                                         int kernel_size) const
+                                          {
+
   Mat res = cv::Mat::zeros(image.size(), CV_32F);
   LinearImageLabeler<> image_labeler(image, _params, threshold);
   SimpleDiff simple_diff_helper(&angle_image);
   Radians start_thresh = 30_deg;
-  for (int c = 0; c < image.cols; ++c) {
+
+  for (int c = 0; c < image.cols; ++c) 
+  {
     // start at bottom pixels and do bfs
     int r = image.rows - 1;
-    while (r > 0 && image.at<float>(r, c) < 0.001f) {
+    
+    while (r > 0 && image.at<float>(r, c) < 0.001f) 
+    {
       --r;
     }
     auto current_coord = PixelCoord(r, c);
     uint16_t current_label = image_labeler.LabelAt(current_coord);
-    if (current_label > 0) {
+    if (current_label > 0) 
+    {
       // this coord was already labeled, skip
       continue;
     }
@@ -109,8 +116,11 @@ Mat DepthGroundRemover::ZeroOutGroundBFS(const cv::Mat& image,
   Mat kernel = GetUniformKernel(kernel_size, CV_8U);
   Mat dilated = Mat::zeros(label_image_ptr->size(), label_image_ptr->type());
   cv::dilate(*label_image_ptr, dilated, kernel);
-  for (int r = 0; r < dilated.rows; ++r) {
-    for (int c = 0; c < dilated.cols; ++c) {
+  
+  for (int r = 0; r < dilated.rows; ++r) 
+  {
+    for (int c = 0; c < dilated.cols; ++c) 
+    {
       if (dilated.at<uint16_t>(r, c) == 0) {
         // all unlabeled points are non-ground
         res.at<float>(r, c) = image.at<float>(r, c);
@@ -120,16 +130,24 @@ Mat DepthGroundRemover::ZeroOutGroundBFS(const cv::Mat& image,
   return res;
 }
 
+
 Mat DepthGroundRemover::RepairDepth(const Mat& no_ground_image, int step,
-                                    float depth_threshold) {
+                                    float depth_threshold) 
+                                    {
   Mat inpainted_depth = no_ground_image.clone();
-  for (int c = 0; c < inpainted_depth.cols; ++c) {
-    for (int r = 0; r < inpainted_depth.rows; ++r) {
+
+  for (int c = 0; c < inpainted_depth.cols; ++c) 
+  {
+    for (int r = 0; r < inpainted_depth.rows; ++r)
+     {
       float& curr_depth = inpainted_depth.at<float>(r, c);
-      if (curr_depth < 0.001f) {
+    
+      if (curr_depth < 0.001f)
+       {
         int counter = 0;
         float sum = 0.0f;
-        for (int i = 1; i < step; ++i) {
+        for (int i = 1; i < step; ++i)
+         {
           if (r - i < 0) {
             continue;
           }
@@ -165,7 +183,13 @@ Mat DepthGroundRemover::RepairDepth(const Mat& depth_image) {
   return inpainted_depth;
 }
 
-Mat DepthGroundRemover::CreateAngleImage(const Mat& depth_image) {
+
+/**
+ * 根据深度图转换成角度图
+ * 
+*/
+Mat DepthGroundRemover::CreateAngleImage(const Mat& depth_image) 
+{
   Mat angle_image = Mat::zeros(depth_image.size(), DataType<float>::type);
   Mat x_mat = Mat::zeros(depth_image.size(), DataType<float>::type);
   Mat y_mat = Mat::zeros(depth_image.size(), DataType<float>::type);
@@ -183,6 +207,7 @@ Mat DepthGroundRemover::CreateAngleImage(const Mat& depth_image) {
       angle_image.at<float>(r, c) = atan2(dy, dx);
     }
   }
+
   return angle_image;
 }
 
@@ -261,6 +286,8 @@ Mat DepthGroundRemover::GetUniformKernel(int window_size, int type) const {
   return kernel;
 }
 
+
+
 Mat DepthGroundRemover::ApplySavitskyGolaySmoothing(const Mat& image,
                                                     int window_size) {
   Mat kernel = GetSavitskyGolayKernel(window_size);
@@ -270,6 +297,8 @@ Mat DepthGroundRemover::ApplySavitskyGolaySmoothing(const Mat& image,
                0, cv::BORDER_REFLECT101);
   return smoothed_image;
 }
+
+
 
 Radians DepthGroundRemover::GetLineAngle(const Mat& depth_image, int col,
                                          int row_curr, int row_neigh) {

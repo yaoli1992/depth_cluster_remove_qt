@@ -1,17 +1,3 @@
-// Copyright (C) 2017  I. Bogoslavskyi, C. Stachniss, University of Bonn
-
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or (at your option)
-// any later version.
-
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details.
-
-// You should have received a copy of the GNU General Public License along
-// with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef SRC_PROJECTIONS_PROJECTION_PARAMS_H_
 #define SRC_PROJECTIONS_PROJECTION_PARAMS_H_
@@ -33,8 +19,8 @@ class SpanParams {
   enum class Direction { HORIZONTAL, VERTICAL };
 
   SpanParams() {}
-  SpanParams(const Radians& start_angle, const Radians& end_angle,
-             const Radians& step) {
+  SpanParams(const Radians& start_angle, const Radians& end_angle, const Radians& step) 
+ {
     _start_angle = start_angle;
     _end_angle = end_angle;
     _step = step;
@@ -42,14 +28,15 @@ class SpanParams {
     _span = Radians::Abs(end_angle - start_angle);
   }
 
-  SpanParams(const Radians& start_angle, const Radians& end_angle,
-             int num_beams) {
+  SpanParams(const Radians& start_angle, const Radians& end_angle,int num_beams) 
+  {
     _start_angle = start_angle;
     _end_angle = end_angle;
     _num_beams = num_beams;
     _step = (_end_angle - _start_angle) / _num_beams;
     _span = Radians::Abs(end_angle - start_angle);
   }
+
 
   const Radians& start_angle() const { return _start_angle; }
   const Radians& end_angle() const { return _end_angle; }
@@ -81,17 +68,14 @@ class ProjectionParams {
 
   /**
    * @brief      Set the angle span in a given direction.
-   *
    * @param[in]  span_params  The span parameters packad into ::SpanParams.
    * @param[in]  direction    The direction. Must be one of
    *                          SpanParams::Direction.
    */
   void SetSpan(const SpanParams& span_params,
                const SpanParams::Direction& direction);
-
   /**
    * @brief      Set the angle spans in a given direction.
-   *
    * @param[in]  span_params  The span parameters packad into ::SpanParams
    * @param[in]  direction    The direction. Must be one of
    *                          SpanParams::Direction.
@@ -120,36 +104,28 @@ class ProjectionParams {
 
   /**
    * @brief      Get angle from row
-   *
    * @param[in]  row   The row
-   *
    * @return     Angle in radians
    */
   const Radians AngleFromRow(int row) const;
 
   /**
    * @brief      Get angle from col
-   *
    * @param[in]  col   The col
-   *
    * @return     Angle in radians
    */
   const Radians AngleFromCol(int col) const;
 
   /**
    * @brief      Get row number from angle
-   *
    * @param[in]  angle  The angle
-   *
    * @return     Row number
    */
   size_t RowFromAngle(const Radians& angle) const;
 
   /**
    * @brief      Get col number from angle
-   *
    * @param[in]  angle  The angle
-   *
    * @return     Col number
    */
   size_t ColFromAngle(const Radians& angle) const;
@@ -158,9 +134,7 @@ class ProjectionParams {
   const std::vector<float>& ColAngleCosines() const;
   const std::vector<float>& RowAngleSines() const;
   const std::vector<float>& ColAngleSines() const;
-
   bool valid();
-
   /**
    * @brief      Default parameters for 16 beam Velodyne
    *
@@ -182,20 +156,17 @@ class ProjectionParams {
   /**
    * @brief      Parameters for 64 beam velodyne assuming equal spacing between
    *             the lasers.
-   *
    * @return     A pointer to parameters
    */
   static std::unique_ptr<ProjectionParams> HDL_64_EQUAL();
   /**
    * @brief      Default parameters for Velodyne from config file
-   *
    * @return     A pointer to parameters
    */
   static std::unique_ptr<ProjectionParams> FromConfigFile(
       const std::string& path);
   /**
    * @brief      Default parameters to cover full sphere
-   *
    * @return     A pointer to parameters
    */
   static std::unique_ptr<ProjectionParams> FullSphere(
@@ -213,8 +184,8 @@ class ProjectionParams {
   SpanParams _v_span_params;
   SpanParams _h_span_params;
 
-  std::vector<Radians> _col_angles;
-  std::vector<Radians> _row_angles;
+  std::vector<Radians> _col_angles;//列角度
+  std::vector<Radians> _row_angles;//行角度
 
   std::vector<float> _col_angles_sines;
   std::vector<float> _col_angles_cosines;

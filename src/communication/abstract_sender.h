@@ -67,8 +67,10 @@ class AbstractSender : public virtual Identifiable {
    *
    * @param      client  The client to receive the processed data
    */
-  void AddClient(AbstractClient<ObjSendType>* client) {
-    if (_type == SenderType::UNDEFINED) {
+  void AddClient(AbstractClient<ObjSendType>* client) 
+  {
+    if (_type == SenderType::UNDEFINED) 
+    {
       fprintf(stderr, "ERROR: class %s (id: %d) has UNDEFINED type;\n",
               this->guess_class_name().c_str(), this->id());
       fprintf(stderr, "\tSet type in AbstractClient constructor;\n");
@@ -97,7 +99,8 @@ class AbstractSender : public virtual Identifiable {
    * @param[in]  id    The identifier of the client to remove
    */
   void RemoveClient(int id) {
-    if (_clients.find(id) == _clients.end()) {
+    if (_clients.find(id) == _clients.end()) 
+    {
       fprintf(stderr, "Error: no such client to delete: %d\n", id);
       return;
     }

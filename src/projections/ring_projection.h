@@ -30,6 +30,7 @@ namespace depth_clustering {
 /**
  * @brief      Class for ring projection.
  */
+
 class RingProjection : public CloudProjection {
  public:
   explicit RingProjection(const ProjectionParams& params)

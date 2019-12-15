@@ -1,17 +1,3 @@
-// Copyright (C) 2017  I. Bogoslavskyi, C. Stachniss, University of Bonn
-
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or (at your option)
-// any later version.
-
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details.
-
-// You should have received a copy of the GNU General Public License along
-// with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef SRC_GROUND_REMOVAL_DEPTH_GROUND_REMOVER_H_
 #define SRC_GROUND_REMOVAL_DEPTH_GROUND_REMOVER_H_
@@ -29,7 +15,8 @@
 namespace depth_clustering {
 
 /**
- * @brief      A class to remove ground based upon depth image
+ * @brief      A class to remove ground based upon depth image   这是一个根据深度图处理得到出去地面的类
+ * 这个模块将得到除去地面部分的数据后，将这些数据发送到客户端
  * @details    Given a depth image and image config this class should remove the
  *             ground and send the new depth image with no ground further
  *             through the pipeline to its clients.
@@ -37,7 +24,8 @@ namespace depth_clustering {
  * @param      params  projection params
  */
 class DepthGroundRemover : public AbstractClient<Cloud>,
-                           public AbstractSender<Cloud> {
+                           public AbstractSender<Cloud> 
+                           {
   using ClientT = AbstractClient<Cloud>;
   using SenderT = AbstractSender<Cloud>;
 
@@ -56,7 +44,6 @@ class DepthGroundRemover : public AbstractClient<Cloud>,
    * @brief      when someone sends us an object we process it
    * @details    receiving a depth image we remove ground from it and send to
    *             next recepient
-   *
    * @param      depth_image  32 bit depth image
    * @param      sender_id    id of the sender
    */
@@ -97,6 +84,8 @@ class DepthGroundRemover : public AbstractClient<Cloud>,
    * @return     column Mat kernel
    */
   cv::Mat GetSavitskyGolayKernel(int window_size) const;
+
+  //针对得到的深度数据继续均匀采样
   cv::Mat GetUniformKernel(int window_size, int type = CV_32F) const;
 
   /**
@@ -122,9 +111,7 @@ class DepthGroundRemover : public AbstractClient<Cloud>,
 
   /**
    * @brief      Repair zeros in the depth image
-   *
    * @param[in]  depth_image  The depth image
-   *
    * @return     depth image with repaired values
    */
   cv::Mat RepairDepth(const cv::Mat& no_ground_image, int step,
@@ -132,7 +119,7 @@ class DepthGroundRemover : public AbstractClient<Cloud>,
 
   cv::Mat RepairDepth(const cv::Mat& depth_image);
 
-  ProjectionParams _params;
+  ProjectionParams _params;//根据激光雷达的属性得到的投影的参数
   int _window_size = 5;
   Radians _ground_remove_angle = 5_deg;
   float _eps = 0.001f;

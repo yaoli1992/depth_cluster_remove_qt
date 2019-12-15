@@ -1,17 +1,4 @@
-// Copyright (C) 2017  I. Bogoslavskyi, C. Stachniss, University of Bonn
 
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or (at your option)
-// any later version.
-
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details.
-
-// You should have received a copy of the GNU General Public License along
-// with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils/cloud.h"
 
@@ -20,7 +7,8 @@ namespace depth_clustering {
 Cloud::Cloud(const Cloud& cloud)
     : _points{cloud.points()},
       _pose(cloud.pose()),
-      _sensor_pose(cloud.sensor_pose()) {
+      _sensor_pose(cloud.sensor_pose()) 
+  {
   if (!cloud.projection_ptr()) {
     // no need to copy projection, there is none yet
     return;
@@ -30,8 +18,8 @@ Cloud::Cloud(const Cloud& cloud)
   _projection = ptr;
 }
 
-std::list<const RichPoint*> Cloud::PointsProjectedToPixel(int row,
-                                                          int col) const {
+std::list<const RichPoint*> Cloud::PointsProjectedToPixel(int row,int col) const {
+  
   std::list<const RichPoint*> point_list;
   if (!_projection) {
     return point_list;
@@ -41,6 +29,7 @@ std::list<const RichPoint*> Cloud::PointsProjectedToPixel(int row,
   }
   return point_list;
 }
+
 
 void Cloud::TransformInPlace(const Pose& pose) {
   for (auto& point : _points) {
@@ -69,18 +58,31 @@ void Cloud::InitProjection(const ProjectionParams& params) {
     fprintf(stderr, "ERROR: failed to initalize projection.\n");
     return;
   }
+  std::cout<< "into function Cloud::InitProjection"<<std::endl;
   _projection = _projection->Clone();
   _projection->InitFromPoints(_points);
 }
 
+
+/*
+有图像生成点云？？？
+*/
 Cloud::Ptr Cloud::FromImage(const cv::Mat& image,
-                            const ProjectionParams& params) {
+                            const ProjectionParams& params) 
+                            {
+  std::cout<<"into Cloud::FromImage"<<std::endl;
+
   CloudProjection::Ptr proj = CloudProjection::Ptr(new RingProjection(params));
   proj->CheckImageAndStorage(image);
   proj->CloneDepthImage(image);
   Cloud cloud;
-  for (int r = 0; r < image.rows; ++r) {
-    for (int c = 0; c < image.cols; ++c) {
+
+  std::cout<<"iamge rows and cols :"<<image.rows <<" * "<<image.cols<<std::endl;
+
+  for (int r = 0; r < image.rows; ++r) 
+  {
+    for (int c = 0; c < image.cols; ++c) 
+    {
       if (image.at<float>(r, c) < 0.0001f) {
         continue;
       }

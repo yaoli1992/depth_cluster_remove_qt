@@ -1,17 +1,3 @@
-// Copyright (C) 2017  I. Bogoslavskyi, C. Stachniss, University of Bonn
-
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or (at your option)
-// any later version.
-
-// This program is distributed in the hope that it will be useful, but WITHOUT
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-// more details.
-
-// You should have received a copy of the GNU General Public License along
-// with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef SRC_PROJECTIONS_CLOUD_PROJECTION_H_
 #define SRC_PROJECTIONS_CLOUD_PROJECTION_H_
@@ -54,7 +40,6 @@ class CloudProjection {
 
   /**
    * @brief      Initialize from 3d points.
-   *
    * @param[in]  points  The points
    */
   virtual void InitFromPoints(const RichPoint::AlignedVector& points) = 0;
@@ -75,6 +60,7 @@ class CloudProjection {
   inline size_t rows() const { return _params.rows(); }
   inline size_t cols() const { return _params.cols(); }
   inline size_t size() const { return _params.size(); }
+  
   inline const ProjectionParams& params() const { return _params; }
   inline const PointContainer& at(const size_t row, const size_t col) const {
     return _data[col][row];
